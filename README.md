@@ -3,65 +3,7 @@
 
 文档用于说明REST API的基本规范.
 
-## 1. __rap2模拟数据与server端响应数据的差异__
-
-### 1.1 响应数据为json数组的处理
-
-rap2模拟响应数据为一个json对象,其collection属性值为所需json数组,结构如下:
-
-    {
-      "collections": [
-        {
-          "path": "一级菜单",
-          "is_leaf_node": false,
-          "code": "01",
-          "parent_code": null,
-          "name": "一级菜单",
-          "target_url": null
-        },
-        {
-          "path": "一级菜单/二级菜单",
-          "is_leaf_node": false,
-          "code": "0101",
-          "parent_code": "01",
-          "name": "二级菜单",
-          "target_url": "https://localhot/action"
-        }
-      ]
-    }
-
-server端响应数据直接为json数组,结构如下:
-
-    [
-      {
-        "path": "一级菜单",
-        "is_leaf_node": false,
-        "code": "01",
-        "parent_code": null,
-        "name": "一级菜单",
-        "target_url": null
-      },
-      {
-        "path": "一级菜单/二级菜单",
-        "is_leaf_node": false,
-        "code": "0101",
-        "parent_code": "01",
-        "name": "二级菜单",
-        "target_url": "https://localhot/action"
-      }
-    ]
-
-### 1.2 响应码
-
-暂时rap2对于请求成功的响应码为200,没有对请求失败的响应进行模拟.
-
-server端按照REST API文档[响应码规范](#status),对响应码进行处理.
-
-## 2. 认证
-
-客户端完成门户SSO过程,请求时携带cookie进行认证.
-
-## 3. HTTP方法
+## 1. HTTP方法
 
 |方法|描述|
 |---|---|
@@ -70,7 +12,58 @@ server端按照REST API文档[响应码规范](#status),对响应码进行处理
 |`PUT`|更新资源,对于没有传递数据的资源属性,不会进行更新.|
 |`DELETE`|删除资源.|
 
-## 4. <span id="status">响应码</span>
+## 2. URL
+
+URL设计遵守 RFC 3986 的规范，并且不使用大写字母，使用下划线`_`进行单词分割，表达资源时采用其英文复数形式。
+
+为避免URL多长、层级过深导致的可读性下降，存在子资源时，减少通过父资源层层定位子资源的方式，将子资源作为根资源`root`使用。
+以公司`company`、部门`department`、雇员`employee`为例，公司下面存在若个部门，部门便为公司的子资源，部门下存在若干雇员，雇员为部门的子资源，相关的接口设计如下：
+
+```
+### 公司URLS ###
+DELETE   /companies/{companyld}                    删除某一公司
+GET     /companies/{companyld}                     获取某一公司信息
+POST    /companies                                 新增公司
+PUT     /companies/{companyld}                     更新某一公司信息
+### 部门URLS ###
+DELETE  /departments/{departmentld}                删除某一部门
+GET     /departments/{departmentld}                获取某一部门信息
+GET     /companies/{companyld}/departments         获取某一公司下所有部门
+POST    /companies/{companyld}/departments         在某一公司下新增部门
+PUT     /departments/{departmentld}                更新某一部门信息
+### 雇员URLS ###
+DELETE  /employees/{employeeld}                    删除某一雇员
+GET     /employees/{employeeld}                    获取某一雇员信息
+GET     /departments/{departmentld}/employees      获取某一部门下所有雇员
+POST    /departments/{departmentld}/employees      在某一部门下新增雇员
+PUT     /employees/{employeeld}                    更新某一雇员信息
+```
+
+## 3. 媒体类型
+
+接口资源可使用多种媒体类型。媒体类型通过请求头的Accept属性控制，属性值格式为：
+
+```
+application/vnd.cngc[.版本].param[+json]
+```
+
+其中，param参数指定媒体类型，如text、html、excel等等
+
+例如需要调用某个接口的v2版本，并且返回的资源信息的excel文件，则请求头Accept属性设置为：
+
+```
+Accept: application/vnd.cngc.v2.excel
+```
+
+又如需要获取富文本的评论信息，其媒体类型为html，并且数据以Json格式返回，响应数据包含在body_html属性中，则请求头Accept属性设置为：
+
+```
+Accept: application/vnd.cngc.v2.html+json
+```
+
+若**不指定**Accept属性，则为调用此接口的**最新版本**，并且以Json格式返回响应体数据。
+
+## 4. 响应码
 
 |响应码|描述|
 |---|---|
@@ -120,21 +113,26 @@ server端按照REST API文档[响应码规范](#status),对响应码进行处理
 
 `500`系列的服务端错误不返回响应数据.
 
-## 5. 日期与时间格式
+## 5. 编码
+
+请求与响应统一采用utf-8编码。
+
+## 6. 日期与时间格式
 
 + 日期格式yyyy-MM-dd
 + 时间采用ISO 8601标准,例如:2012-12-20T12:00:00+08:00
 
-## 6.分页功能
+## 7. 分页功能
 
 `GET`方法获取资源时,可使用分页方式获取资源数组.传递`?page`参数设置页数,页数从1开始,传递`?per_page`设置每页数量.例如:
+
 ```bash
 curl 'https://localhost/companies?page=1&per_page=100'
 ```
 
 *注意*:不是每个`GET`方法api都具有分页功能,支持的接口会明确标注.
 
-## 7.多层级结构数据的响应
+## 8. 多层级结构数据的响应
 
 多层级结构数据,也即树形结构数据,大数据量下对服务端造成较大压力,同时过多的数据也不便前端处理与显示.利用数据的层级结构,单独加载某一节点下的直接子节点,实现数据的懒加载或异步加载,能够提高用户的操作体验,降低计算与网络资源的消耗.
 
@@ -142,15 +140,11 @@ curl 'https://localhost/companies?page=1&per_page=100'
 
 *注意*:不是所有多层级结构数据都支持`?recursive`参数,支持的接口会明确标注.
 
-## 8.排序功能
+## 9. 排序功能
 
 返回集合的接口,可是使用参数`?sort`设定排序,使用逗号`,`分割多个排序字段,字段默认正序排序.在字段前增加前缀`-`设置字段为倒序.
 
 *注意*:不是所有接口都支持`?sort`参数,支持的接口会明确标注.
-
-
-
-
 
 
 
