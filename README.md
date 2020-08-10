@@ -21,27 +21,27 @@ URL设计遵守 RFC 3986 的规范，并且不使用大写字母，使用下划�
 
 ```
 ### 公司URLS ###
-DELETE   /companies/{companyld}                    删除某一公司
-GET     /companies/{companyld}                     获取某一公司信息
+DELETE   /companies/{company_id}                    删除某一公司
+GET     /companies/{company_id}                     获取某一公司信息
 POST    /companies                                 新增公司
-PUT     /companies/{companyld}                     更新某一公司信息
+PUT     /companies/{company_id}                     更新某一公司信息
 ### 部门URLS ###
-DELETE  /departments/{departmentld}                删除某一部门
-GET     /departments/{departmentld}                获取某一部门信息
-GET     /companies/{companyld}/departments         获取某一公司下所有部门
-POST    /companies/{companyld}/departments         在某一公司下新增部门
-PUT     /departments/{departmentld}                更新某一部门信息
+DELETE  /departments/{department_id}                删除某一部门
+GET     /departments/{department_id}                获取某一部门信息
+GET     /companies/{company_id}/departments         获取某一公司下所有部门
+POST    /companies/{company_id}/departments         在某一公司下新增部门
+PUT     /departments/{department_id}                更新某一部门信息
 ### 雇员URLS ###
-DELETE  /employees/{employeeld}                    删除某一雇员
-GET     /employees/{employeeld}                    获取某一雇员信息
-GET     /departments/{departmentld}/employees      获取某一部门下所有雇员
-POST    /departments/{departmentld}/employees      在某一部门下新增雇员
-PUT     /employees/{employeeld}                    更新某一雇员信息
+DELETE  /employees/{employee_id}                    删除某一雇员
+GET     /employees/{employee_id}                    获取某一雇员信息
+GET     /departments/{department_id}/employees      获取某一部门下所有雇员
+POST    /departments/{department_id}/employees      在某一部门下新增雇员
+PUT     /employees/{employee_id}                    更新某一雇员信息
 ```
 
 ## 3. 媒体类型
 
-接口资源可使用多种媒体类型。媒体类型通过请求头的Accept属性控制，属性值格式为：
+接口资源可使用多种媒体类型。媒体类型通过请求头的`Accept`属性控制，属性值格式为：
 
 ```
 application/vnd.cngc[.版本].param[+json]
@@ -61,7 +61,11 @@ Accept: application/vnd.cngc.v2.excel
 Accept: application/vnd.cngc.v2.html+json
 ```
 
-若**不指定**Accept属性，则为调用此接口的**最新版本**，并且以Json格式返回响应体数据。
+若**不指定**Accept属性，则为调用此接口的**最新版本**。但是这个规则以后可能会修改,若要确保调用接口的稳定性,最好明确指定使用版本,如:
+
+```
+Accept: application/vnd.cngc.v1+json
+```
 
 ## 4. 响应码
 
@@ -146,13 +150,72 @@ curl 'https://localhost/companies?page=1&per_page=100'
 
 *注意*:不是所有接口都支持`?sort`参数,支持的接口会明确标注.
 
+## 10. 响应体资源属性过滤
 
+可以指定响应体中资源所包含的属性,通过`fields`传值设置,多指用`,`分割.如:
 
+```
+GET /users?fields=id,first_name
+```
 
+响应体内容为:
 
+```
+[
+  {
+    "id": "1",
+    "first_name:": "John"
+  },
+  {
+    "id": "2",
+    "first_name:": "Bob"
+  }
+]
+```
 
+## 11. 嵌入资源
 
+为了减少处理相关资源的请求次数,可使用嵌入资源功能.通过`embed`参数指定需要嵌入的资源名,多个资源名使用`,`分割.
 
+如请求如下:
 
+```
+GET /tickets/543abc
+```
 
+返回数据为:
+
+```
+{
+  "id": "543add",
+  "type": "email",
+  "label_ids": [ "123abc", "234bcd" ]
+}
+```
+
+如果要返回`labels`信息,请求如下:
+
+```
+GET /tickets/543abc?embed=labels
+```
+
+返回数据为:
+
+```
+{
+  "id": "543add",
+  "type": "email",
+  "label_ids": [ "123abc", "234bcd" ],
+  "labels": [
+    {
+      "id": "123abc",
+      "name": "Refund"
+    },
+    {
+      "id": "234bcd",
+      "name": "VIP"
+    }
+  ]
+}
+```
 
