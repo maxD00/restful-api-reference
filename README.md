@@ -219,3 +219,27 @@ GET /tickets/543abc?embed=labels
 }
 ```
 
+## 12. 总数
+
+对于返回是集合的请求,需要获取总数值,在请求中追加`count=true`参数,此时在响应头中包含`Total-Count`属性,说明总数.如
+
+```
+GET /users?count=true
+```
+
+返回的响应头与响应体为:
+
+```
+200 OK
+Total-Count: 135
+Rate-Limit-Limit: 100
+Rate-Limit-Remaining: 98
+Rate-Limit-Used: 2
+Rate-Limit-Reset: 20
+Content-Type: application/json
+[
+  ... 结果 ... 
+]
+```
+
+**注意** :`Total-Count`表示的是有效资源的总数,不是当前响应体中资源的数量.比如在分页,或者响应体数量有限制的情况下,`Total-Count`与当前返回的资源数是不等的.即分页情况下,`Total-Count`表示的是总数,当前响应体表示的是当前页资源.
