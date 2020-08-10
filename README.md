@@ -243,3 +243,36 @@ Content-Type: application/json
 ```
 
 **注意** :`Total-Count`表示的是有效资源的总数,不是当前响应体中资源的数量.比如在分页,或者响应体数量有限制的情况下,`Total-Count`与当前返回的资源数是不等的.即分页情况下,`Total-Count`表示的是总数,当前响应体表示的是当前页资源.
+
+## 13. 数据字典的使用
+
+当资源的属性为数据字典时,此属性为一个对象,包含`code`,`name`.如用户的性别属性`gender`是一个字典属性,`0`表示男,`1`表示女,则新增用户请求如下:
+
+```
+POST /users HTTP/1.1
+Content-Type: application/json
+
+{
+    "name": "张三",
+    "gender_code": "1",
+    "email": "zhangsan@163.com"
+}
+```
+
+**注**:新增的请求体中,性别是编码,则在属性命名上显示表达出`code`.即`gender_code`.
+
+此新增请求的返回数据如下:
+
+```json
+{
+    "name": "张三",
+    "gender": {
+      "code": "1",
+      "name": "男"
+    },
+    "email": "zhangsan@163.com"
+}
+```
+
+**注**:返回数据中,以`gender`表示性别,为一对象,包含`code`与`name`,在用户的查询接口中,返回的数据也使用对象`gender`.这样接口便通用与查看编辑等业务场景中.
+
