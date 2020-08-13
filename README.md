@@ -24,7 +24,7 @@ URL设计遵守 RFC 3986 的规范，并且不使用大写字母，使用下划�
 ### 公司URLS ###
 DELETE   /companies/{company_id}                    删除某一公司
 GET     /companies/{company_id}                     获取某一公司信息
-POST    /companies                                 新增公司
+POST    /companies                                  新增公司
 PUT     /companies/{company_id}                     更新某一公司信息
 ### 部门URLS ###
 DELETE  /departments/{department_id}                删除某一部门
@@ -295,4 +295,26 @@ HEAD	/users/zhangsan
 ```
 
 响应码为`404`,即这个账号的用户不存在,响应码为`200`则这个账号的用户存在.
+
+## 15. 响应封装
+
+为了应对某些客户端无法读取响应的`Header`属性,可使用查询参数`envelope=true`触发响应封装功能,即将响应码\响应头\响应数据,全部封装到响应体中,响应码使用`200`,例如:
+
+```
+GET	/users/zhangsan
+
+200 OK
+{
+	"status": 404,
+  "headers": {
+    "Rate-Limit-Limit": 100,
+    "Rate-Limit-Remaining": 50,
+    "Rate-Limit-Used": 0,
+    "Rate-Limit-Reset": 25
+   },
+  "response": {
+    "message": "Not Found"
+  }
+}
+```
 
