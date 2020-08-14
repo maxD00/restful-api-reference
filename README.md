@@ -21,21 +21,21 @@ URL设计遵守 RFC 3986 的规范，并且不使用大写字母，使用下划�
 以公司`company`、部门`department`、雇员`employee`为例，公司下面存在若个部门，部门便为公司的子资源，部门下存在若干雇员，雇员为部门的子资源，相关的接口设计如下：
 
 ```
-### 公司URLS ###
+### 公司资源 ###
 DELETE   /companies/{company_id}                    删除某一公司
 GET     /companies/{company_id}                     获取某一公司信息
 POST    /companies                                  新增公司
 PUT     /companies/{company_id}                     更新某一公司信息
-### 部门URLS ###
+### 部门资源 ###
 DELETE  /departments/{department_id}                删除某一部门
 GET     /departments/{department_id}                获取某一部门信息
-GET     /companies/{company_id}/departments         获取某一公司下所有部门
+GET     /companies/{company_id}/departments         获取某一公司下所有部门信息
 POST    /companies/{company_id}/departments         在某一公司下新增部门
 PUT     /departments/{department_id}                更新某一部门信息
-### 雇员URLS ###
+### 雇员资源 ###
 DELETE  /employees/{employee_id}                    删除某一雇员
 GET     /employees/{employee_id}                    获取某一雇员信息
-GET     /departments/{department_id}/employees      获取某一部门下所有雇员
+GET     /departments/{department_id}/employees      获取某一部门下所有雇员信息
 POST    /departments/{department_id}/employees      在某一部门下新增雇员
 PUT     /employees/{employee_id}                    更新某一雇员信息
 ```
@@ -50,7 +50,7 @@ application/vnd.cngc[.版本].param[+json]
 
 其中，param参数指定媒体类型，如text、html、excel等等
 
-例如需要调用某个接口的v2版本，并且返回的资源信息的excel文件，则请求头Accept属性设置为：
+例如需要调用某个接口的v2版本，并且返回资源信息的excel文件，则请求头Accept属性设置为：
 
 ```
 Accept: application/vnd.cngc.v2.excel
@@ -62,7 +62,7 @@ Accept: application/vnd.cngc.v2.excel
 Accept: application/vnd.cngc.v2.html+json
 ```
 
-若**不指定**Accept属性，则为调用此接口的**最新版本**。但是这个规则以后可能会修改,若要确保调用接口的稳定性,最好明确指定使用版本,如:
+若**不指定**Accept属性，则为调用此接口的**最新版本**。但是这个规则以后可能会修改,若要确保调用接口的稳定性,需明确指定使用版本,如:
 
 ```
 Accept: application/vnd.cngc.v1+json
@@ -74,8 +74,8 @@ Accept: application/vnd.cngc.v1+json
 |---|---|
 |`200`|请求成功,并获取到响应内容.|
 |`201`|资源创建成功.|
-|`202`|服务端已经接收到请求,但是尚未处理完毕,也不保证处理成功,用于异步请求|
-|`204`|请求成功,没有响应内容,页面也不用跳转,如删除成功.|
+|`202`|服务端已经接收到请求,但是尚未处理完毕,也不保证处理成功,用于异步请求.|
+|`204`|请求成功,没有响应内容,页面也不用跳转,适用场景如删除成功.|
 |`301`|资源永久重定向到`Location`指向的地址,对此资源的操作,都需使用新地址.|
 |`302`|资源临时重定向到`Location`指向的地址,此次对资源的操作使用新地址,后续操作仍使用原地址.|
 |`400`|请求时发送的数据,不符合json格式.|
@@ -129,7 +129,7 @@ Accept: application/vnd.cngc.v1+json
 
 ## 7. 分页功能
 
-`GET`方法获取资源时,可使用分页方式获取资源数组.传递`?page`参数设置页数,页数从1开始,传递`?per_page`设置每页数量.例如:
+`GET`方法获取资源时,可使用分页方式获取资源数组.传递`page`参数设置页数,页数从1开始,传递`per_page`设置每页数量.例如:
 
 ```bash
 curl 'https://localhost/companies?page=1&per_page=100'
@@ -141,19 +141,19 @@ curl 'https://localhost/companies?page=1&per_page=100'
 
 多层级结构数据,也即树形结构数据,大数据量下对服务端造成较大压力,同时过多的数据也不便前端处理与显示.利用数据的层级结构,单独加载某一节点下的直接子节点,实现数据的懒加载或异步加载,能够提高用户的操作体验,降低计算与网络资源的消耗.
 
-参数`?recursive`控制是否对数据进行递归查询,`?recursive=true`时返回所有后代资源,`?recursive=false`时仅返回直接子节点资源.
+查询参数`recursive`控制是否对数据进行递归查询,`recursive=true`时返回所有后代资源,`recursive=false`时仅返回直接子节点资源.
 
-*注意*:不是所有多层级结构数据都支持`?recursive`参数,支持的接口会明确标注.
+*注意*:不是所有多层级结构数据都支持`recursive`参数,支持的接口会明确标注.
 
 ## 9. 排序功能
 
-返回集合的接口,可是使用参数`?sort`设定排序,使用逗号`,`分割多个排序字段,字段默认正序排序.在字段前增加前缀`-`设置字段为倒序.
+返回集合的接口,可是使用查询参数`sort`设定排序,使用逗号`,`分割多个排序字段,字段默认正序排序.在字段前增加前缀`-`设置字段为倒序.
 
-*注意*:不是所有接口都支持`?sort`参数,支持的接口会明确标注.
+*注意*:不是所有接口都支持`sort`参数,支持的接口会明确标注.
 
 ## 10. 响应体资源属性过滤
 
-可以指定响应体中资源所包含的属性,通过`fields`传值设置,多指用`,`分割.如:
+可以指定响应体中资源所包含的属性,通过查询参数`fields`传值设置,多值用`,`分割.如:
 
 ```
 GET /users?fields=id,first_name
@@ -176,7 +176,7 @@ GET /users?fields=id,first_name
 
 ## 11. 嵌入资源
 
-为了减少处理相关资源的请求次数,可使用嵌入资源功能.通过`embed`参数指定需要嵌入的资源名,多个资源名使用`,`分割.
+为了减少处理相关资源的请求次数,可实现嵌入资源功能.通过查询参数`embed`指定需要嵌入的资源名,多个资源名使用`,`分割.
 
 如请求如下:
 
@@ -222,7 +222,7 @@ GET /tickets/543abc?embed=labels
 
 ## 12. 总数
 
-对于返回是集合的请求,需要获取总数值,在请求中追加`count=true`参数,此时在响应头中包含`X-Total-Count`属性,说明总数.如
+对于返回是集合的请求,需要获取总数值,在请求中追加查询参数`count=true`,此时在响应头中包含`X-Total-Count`属性,表达总数.如
 
 ```
 GET /users?count=true
@@ -256,7 +256,7 @@ Content-Type: application/json
 }
 ```
 
-**注**:新增的请求体中,性别是编码,则在属性命名上显示表达出`code`.即`gender_code`.
+**注**:新增的请求体中,性别是编码,则在属性命名上显式表达出`code`.即`gender_code`.
 
 此新增请求的返回数据如下:
 
@@ -271,7 +271,7 @@ Content-Type: application/json
 }
 ```
 
-**注**:返回数据中,以`gender`表示性别,为一对象,包含`code`与`name`,在用户的查询接口中,返回的数据也使用对象`gender`.这样接口便通用与查看编辑等业务场景中.
+**注**:返回数据中,以`gender`表示性别,为一对象,包含`code`与`name`,在用户的查询接口中,返回的数据也使用对象`gender`.这样接口便通用于查看/编辑等业务场景中.
 
 ## 14. *检验资源是否存在*功能的设计
 
@@ -284,7 +284,7 @@ HEAD	/users?email=zhangsan@163.com&count=true
 X-Total-Count: 0
 ```
 
-因为此场景下响应体数据没有用,所以使用`HEAD`方法请求,避免响应体数据的带宽浪费.同时因为`/users`接口使用`GET`方法在没有查询到资源的情况下,响应码为`200`,而不是`404`,响应数据也是空数组(与`GET	/users`接口的设计有关),所以使用查询参数`count=true`开启总数查询功能,通过返回`Header`中`X-Total-Count`判断是否有使用此`email`的用户.
+由于此场景下响应体数据没有用,使用`HEAD`方法请求,避免响应体数据的资源浪费.同时因为`/users`接口使用`GET`方法在没有查询到资源的情况下,响应码为`200`,而不是`404`,响应数据为空数组(与`GET	/users`接口的设计有关),所以使用查询参数`count=true`开启总数查询功能,通过返回`Header`中`X-Total-Count`判断是否有使用此`email`的用户.
 
 若校验的条件就是用户的资源主键,比如`user`的资源定位使用账号`account`,在注册时需要及时显示账号是否被占用,可使用以下请求:
 
@@ -298,14 +298,14 @@ HEAD	/users/zhangsan
 
 ## 15. 响应封装
 
-为了应对某些客户端无法读取响应的`Header`属性,可使用查询参数`envelope=true`触发响应封装功能,即将响应码\响应头\响应数据,全部封装到响应体中,响应码使用`200`,例如:
+为了应对某些客户端无法读取响应的`Headers`属性,可使用查询参数`envelope=true`触发响应封装功能,即将响应码\响应头\响应数据,全部封装到响应体中,响应码使用`200`,例如:
 
 ```
 GET	/users/zhangsan
 
 200 OK
 {
-	"status": 404,
+  "status": 404,
   "headers": {
     "Rate-Limit-Limit": 100,
     "Rate-Limit-Remaining": 50,
