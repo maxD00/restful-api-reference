@@ -301,7 +301,7 @@ HEAD	/users/zhangsan
 为了应对某些客户端无法读取响应的`Headers`属性,可使用查询参数`envelope=true`触发响应封装功能,即将响应码\响应头\响应数据,全部封装到响应体中,响应码使用`200`,例如:
 
 ```
-GET	/users/zhangsan
+GET	/users/zhangsan?envelope=true
 
 200 OK
 {
