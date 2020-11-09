@@ -101,7 +101,8 @@ Accept: application/vnd.cngc.v1+json
         {
           "code": "missing_attribute",
           "attribute": "identity",
-          "message": "身份证不能为空!"
+          "message": "身份证不能为空!",
+          "rejected_value": "不符合的值"
         }
       ]
     }
