@@ -87,9 +87,10 @@ Accept: application/vnd.cngc.v1+json
 
 *错误代码补充说明*
 
-客户端请求错误`400`, `401`, `403`, `404`, `etc`响应数据含有message属性,用于描述错误的基本信息,如:
+客户端请求错误`400`, `401`, `403`, `404`, `etc`响应数据含有message属性与code属性,用于描述错误的基本信息,如:
 
     {
+    	"code": "403",
       "message": "您无权访问此接口!"
     }
 
@@ -107,7 +108,7 @@ Accept: application/vnd.cngc.v1+json
       ]
     }
 
-响应数据中,通过code属性进行属性值的错误类别说明:
+响应数据中,通过code属性进行属性值的错误类别说明,通用的code属性为:
 
 |错误code|描述|
 |-------|----|
@@ -115,7 +116,8 @@ Accept: application/vnd.cngc.v1+json
 |`already_exists`|属性值的唯一性校验错误.|
 |`invalid_format`|属性值不符合规定的格式要求.|
 |`missing_resource`|属性值需要关联某一资源,但资源不存在.如使用了不存在的数据字典项.|
-|`custom`|自定义类型属性值错误,通过`message`属性获取错误描述|
+
+**注**:存在其他错误code,用于说明特定的错误类型.
 
 `500`系列的服务端错误不返回响应数据.
 
